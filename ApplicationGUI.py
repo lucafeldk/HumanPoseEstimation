@@ -135,9 +135,14 @@ class MainWindow:
 
     def ScreenshotEvent(self):
         if self.estimation_img:
-            self.estimation_img.cget("dark_image").show()
+            screenshot_img = self.estimation_img
             #cv2.imshow("Screenshot", self.estimation_img)
-            print("Screenshot Taken")
+            #print("Screenshot Taken")
+
+            self.screenshot_window = ctk.CTkToplevel(self.master)#, screenshot_img)
+            self.screenshot_window.attributes("-topmost",True)
+            self.app =ScreenshotWindow(self.screenshot_window, screenshot_img)
+            #self.app.openExplorer()
 
     def FileExplorerEvent(self):
         # create new toplevel window for file explorer
@@ -148,28 +153,26 @@ class MainWindow:
     def ImportVideoEvent(self):
         self.import_text.set(self.FileExplorerEvent()) 
         
-        
-        '''self.file_explorer = ctk.CTkToplevel(self.master)
-        self.file_explorer.attributes("-topmost",True)
-        self.app =FileExplorer(self.file_explorer)
-        self.app.openExplorer()'''
-        
     def __del__(self):
         self.cap.release()
 
-'''
-class FileExplorer():
-    def __init__(self, master):
+class ScreenshotWindow():
+    def __init__(self, master,screenshot_img):
         self.master = master
         master.title("File Explorer")
-        master.geometry("750x350")
+        master.geometry("700x540")
+
+        # Frame für Screenshot
+        self.Screen_Frame = ctk.CTkFrame(self.master, width=660, height=500)
+        self.Screen_Frame.place(rely=0.5, relx=0.5, anchor = "center")
+        self.screenshot = ctk.CTkLabel(self.Screen_Frame, image = screenshot_img, text ="")
+        self.screenshot.grid(row=0,column=0,padx=10, pady=10, sticky="nsew")
 
     def openExplorer(self):
         self.f_path = askopenfilename(initialdir="/",title="Select File",
                                        filetypes=(("Text files","*.txt*"),("All Files","*.*")))
         return self.f_path
         
-'''
 
 def main():
     # start GUI
