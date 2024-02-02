@@ -1,31 +1,32 @@
 import customtkinter as ctk
+import tkinter as tk
 import cv2
 from PIL import Image
 import HPEstimation as hpe
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename,asksaveasfilename
 
 
 class MainWindow:
-    def __init__(self, master):
+    def __init__(self, parent):
         ctk.set_appearance_mode("dark")
         self.cap = cv2.VideoCapture(0)
         self.cap_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # float `width`
         self.cap_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.estimation = hpe.PoseEstimation()
         self.estimation_img = None
-        self.master = master
+        self.parent = parent
 
         #Main Window Layout Management
-        master.title("Human Pose Estimator")
-        master.geometry("950x650")
-        master.grid_columnconfigure(0, weight=1)
-        master.grid_columnconfigure(1, weight =20)
-        master.grid_rowconfigure(0, weight=10)
-        master.grid_rowconfigure(1, weight=1)
+        self.parent.title("Human Pose Estimator")
+        self.parent.geometry("950x650")
+        self.parent.grid_columnconfigure(0, weight=1)
+        self.parent.grid_columnconfigure(1, weight =20)
+        self.parent.grid_rowconfigure(0, weight=10)
+        self.parent.grid_rowconfigure(1, weight=1)
 
         #### CONTROL PANEL #####
         # create instance for control panel
-        self.control_frame = ctk.CTkFrame(self.master)
+        self.control_frame = ctk.CTkFrame(self.parent)
         self.control_frame.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky="nsew")
         self.control_frame.grid_columnconfigure(0,weight=1)
         self.control_frame.grid_columnconfigure(1,weight=8)
@@ -60,12 +61,12 @@ class MainWindow:
 
         #### WEBCAM PANEL #####
         # create instnace for webcam panel
-        self.webcam_frame = ctk.CTkFrame(self.master)
+        self.webcam_frame = ctk.CTkFrame(self.parent)
         self.webcam_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
         self.webcam_holder = None
 
         #### RECORDING PANEL ####
-        self.recording_frame = ctk.CTkFrame(self.master, width=self.webcam_frame.cget("width"),
+        self.recording_frame = ctk.CTkFrame(self.parent, width=self.webcam_frame.cget("width"),
                                             height = self.webcam_frame.cget("height")/10)
         self.recording_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
         self.screenshot_button = ctk.CTkButton(self.recording_frame, text="Screenshot", command=self.ScreenshotEvent)
@@ -135,51 +136,64 @@ class MainWindow:
 
     def ScreenshotEvent(self):
         if self.estimation_img:
-            screenshot_img = self.estimation_img
-            #cv2.imshow("Screenshot", self.estimation_img)
-            #print("Screenshot Taken")
+            self.screenshot_window = ScreenshotWindow(self, self.estimation_img)
 
-            self.screenshot_window = ctk.CTkToplevel(self.master)#, screenshot_img)
-            self.screenshot_window.attributes("-topmost",True)
-            self.app =ScreenshotWindow(self.screenshot_window, screenshot_img)
-            #self.app.openExplorer()
 
-    def FileExplorerEvent(self):
-        # create new toplevel window for file explorer
-        self.f_path = askopenfilename(initialdir="/",title="Select File",
-                                       filetypes=(("Text files","*.txt*"),("All Files","*.*")))
+            
+            
+
+    def FileExplorerEvent(self, command):
+        # open up file explorer
+        if command == "open":
+            self.f_path = askopenfilename(initialdir="/",title="Select File",
+                                        filetypes=(("Text files","*.txt*"),("All Files","*.*")))
+            
+        else:
+            self.f_path = asksaveasfilename(initialdir="/",title="Select File",
+                                        filetypes=(("Text files","*.txt*"),("All Files","*.*")))
+    
         return self.f_path
     
     def ImportVideoEvent(self):
-        self.import_text.set(self.FileExplorerEvent()) 
+        self.import_text.set(self.FileExplorerEvent("open")) 
         
     def __del__(self):
         self.cap.release()
 
-class ScreenshotWindow():
-    def __init__(self, master,screenshot_img):
-        self.master = master
-        master.title("File Explorer")
-        master.geometry("700x540")
+class ScreenshotWindow(ctk.CTkToplevel):
+    def __init__(self, controller, screenshot_img):
+        super().__init__()
+        self.controller = controller
+        self.title("Screenshot Window")
+        self.geometry("720x560")
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=10)
+        self.grid_rowconfigure(1, weight=1)
+        self.focus()
 
-        # Frame für Screenshot
-        self.Screen_Frame = ctk.CTkFrame(self.master, width=660, height=500)
-        self.Screen_Frame.place(rely=0.5, relx=0.5, anchor = "center")
+        # Frame for Screenshot
+        self.Screen_Frame = ctk.CTkFragitme(self)
+        self.Screen_Frame.grid(row=0,column=0,pady=5, padx=5, sticky="nsew")
+
+        # Label Holder for Screenshot
         self.screenshot = ctk.CTkLabel(self.Screen_Frame, image = screenshot_img, text ="")
-        self.screenshot.grid(row=0,column=0,padx=10, pady=10, sticky="nsew")
+        self.screenshot.place(rely=0.5, relx=0.5, anchor = "center")
 
-    def openExplorer(self):
-        self.f_path = askopenfilename(initialdir="/",title="Select File",
-                                       filetypes=(("Text files","*.txt*"),("All Files","*.*")))
-        return self.f_path
-        
+        # Save button
+        self.config_frame = ctk.CTkFrame(self, height=10)
+        self.config_frame.grid(row=1, column=0,sticky="nsew")
+        self.save_button = ctk.CTkButton(self.config_frame, text="Save Image",command=self.saveScreenshot)
+        self.save_button.place(rely=0.5, relx=0.5,anchor="center")
 
+    def saveScreenshot(self):
+        save_path = self.controller.FileExplorerEvent("save")
+        print(save_path)
+          
 def main():
     # start GUI
     root = ctk.CTk()
     app = MainWindow(root)
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()
