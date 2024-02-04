@@ -2,6 +2,7 @@ import customtkinter as ctk
 import tkinter as tk
 import cv2
 from PIL import Image
+from PIL import ImageTk
 import HPEstimation as hpe
 from tkinter.filedialog import askopenfilename,asksaveasfilename
 
@@ -99,7 +100,6 @@ class MainWindow:
         else:
             del self.estimation
 
-
     def ShowWebcam(self):
         # method for showing webcam footage 
         if self.switch_cam_var.get() == "off":
@@ -118,12 +118,12 @@ class MainWindow:
 
             # Render keypoints
             self.estimation.loop_through_people(frame, keypoints_with_scores, self.confidence_slider.get())
-            img = Image.fromarray(frame)
+            self.raw_img = Image.fromarray(frame)
 
             if self.webcam_holder:
                 self.webcam_holder.configure(image=self.estimation_img)
                 self.webcam_holder.image = self.estimation_img
-                self.estimation_img = ctk.CTkImage(dark_image=img, size=(640, 480))
+                self.estimation_img = ctk.CTkImage(dark_image=self.raw_img, size=(640, 480))
 
             else:
                 self.webcam_holder = ctk.CTkLabel(self.webcam_frame, image=self.estimation_img, text="", padx=10, pady=10)
@@ -136,29 +136,27 @@ class MainWindow:
 
     def ScreenshotEvent(self):
         if self.estimation_img:
-            self.screenshot_window = ScreenshotWindow(self, self.estimation_img)
+            self.screenshot_window = ScreenshotWindow(self, self.raw_img)
 
-
-            
-            
-
-    def FileExplorerEvent(self, command):
+    def FileExplorerEvent(self, command, list_filetypes):
         # open up file explorer
+        #"All Files","*.*"
         if command == "open":
             self.f_path = askopenfilename(initialdir="/",title="Select File",
-                                        filetypes=(("Text files","*.txt*"),("All Files","*.*")))
+                                        filetypes=list_filetypes)
             
         else:
             self.f_path = asksaveasfilename(initialdir="/",title="Select File",
-                                        filetypes=(("Text files","*.txt*"),("All Files","*.*")))
-    
+                                        filetypes=list_filetypes)
         return self.f_path
     
     def ImportVideoEvent(self):
-        self.import_text.set(self.FileExplorerEvent("open")) 
+        filetypes = [("MP4 Videoformat .mp4", "*.mp4"),("AVI Videoformat .avi", "*.avi")]
+        self.import_text.set(self.FileExplorerEvent("open", filetypes)) 
         
     def __del__(self):
         self.cap.release()
+
 
 class ScreenshotWindow(ctk.CTkToplevel):
     def __init__(self, controller, screenshot_img):
@@ -170,13 +168,15 @@ class ScreenshotWindow(ctk.CTkToplevel):
         self.grid_rowconfigure(0, weight=10)
         self.grid_rowconfigure(1, weight=1)
         self.focus()
+        self.img = screenshot_img
 
         # Frame for Screenshot
-        self.Screen_Frame = ctk.CTkFragitme(self)
+        self.Screen_Frame = ctk.CTkFrame(self)
         self.Screen_Frame.grid(row=0,column=0,pady=5, padx=5, sticky="nsew")
 
         # Label Holder for Screenshot
-        self.screenshot = ctk.CTkLabel(self.Screen_Frame, image = screenshot_img, text ="")
+        self.ctkScreenshot_img = ctk.CTkImage(dark_image=self.img, size=(640, 480))
+        self.screenshot = ctk.CTkLabel(self.Screen_Frame, image = self.ctkScreenshot_img, text ="")
         self.screenshot.place(rely=0.5, relx=0.5, anchor = "center")
 
         # Save button
@@ -186,14 +186,16 @@ class ScreenshotWindow(ctk.CTkToplevel):
         self.save_button.place(rely=0.5, relx=0.5,anchor="center")
 
     def saveScreenshot(self):
-        save_path = self.controller.FileExplorerEvent("save")
-        print(save_path)
-          
+        filetypes = [("Jpeg Image .jpg","*.jpg")]
+        save_path = self.controller.FileExplorerEvent("save", filetypes)
+        self.img.save(f"{save_path}.jpg")
+
 def main():
     # start GUI
     root = ctk.CTk()
     app = MainWindow(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()
