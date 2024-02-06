@@ -12,8 +12,12 @@ from datetime import datetime
 class PoseEstimation:
     def __init__(self):
         # model location
-        self.model = hub.load("https://www.kaggle.com/models/google/movenet/frameworks/TensorFlow2/variations/multipose-lightning/versions/1")
+        # self.model = hub.load("https://www.kaggle.com/models/google/movenet/frameworks/TensorFlow2/variations/multipose-lightning/versions/1")
+        self.modelPath = "Models"
+        self.model = hub.load(self.modelPath)
         self.movenet = self.model.signatures['serving_default']
+
+        
 
         # edges that connect
         self.edges = {
@@ -74,7 +78,6 @@ class PoseEstimation:
             if conf > self.confidence_threshold:
                 cv2.circle(frame, (int(kx), int(ky)), 4, (0, 255, 0), -1)
 
-
     def loop_through_people(self, frame, keypoints_with_scores, confidence_threshold):
         self.confidence_threshold = confidence_threshold
         for person in keypoints_with_scores:
@@ -94,7 +97,6 @@ def release_Videooutput(out, video_file):
         print("Video not saved")
     else:
         print("Video saved")
-
 
 def start_estimation():
     # Start Webcam
