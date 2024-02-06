@@ -1,10 +1,9 @@
 import customtkinter as ctk
-import tkinter as tk
 import cv2
 from PIL import Image
 from PIL import ImageTk
 import HPEstimation as hpe
-from tkinter.filedialog import askopenfilename,asksaveasfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 
 class MainWindow:
@@ -70,8 +69,10 @@ class MainWindow:
         self.recording_frame = ctk.CTkFrame(self.parent, width=self.webcam_frame.cget("width"),
                                             height = self.webcam_frame.cget("height")/10)
         self.recording_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
-        self.screenshot_button = ctk.CTkButton(self.recording_frame, text="Screenshot", command=self.ScreenshotEvent)
-        self.screenshot_button.grid(row=0,column=0,padx=10, pady=10, sticky="nsew")
+        self.screenshot_button = ctk.CTkButton(self.recording_frame, text="Take Screenshot", command=self.ScreenshotEvent)
+        self.screenshot_button.grid(row=0,column=0,padx=10, pady=5, sticky="nsew")
+        self.recording_button = ctk.CTkButton(self.recording_frame, text="Start Recording", command=self.RecordingEvent)
+        self.recording_button.grid(row=1,column=0,padx=10,pady=5,sticky="nsew")
 
     def CamSwitchEvent(self):
         # Event for switching Webcam of Laptop off or on
@@ -104,6 +105,9 @@ class MainWindow:
         # method for showing webcam footage 
         if self.switch_cam_var.get() == "off":
             return
+     
+    def RecordingEvent(self):
+        pass
 
         ret, frame = self.cap.read()
         if ret:
@@ -143,11 +147,12 @@ class MainWindow:
         #"All Files","*.*"
         if command == "open":
             self.f_path = askopenfilename(initialdir="/",title="Select File",
-                                        filetypes=list_filetypes)
+                                        filetypes=list_filetypes, defaultextension=".*")
             
         else:
             self.f_path = asksaveasfilename(initialdir="/",title="Select File",
-                                        filetypes=list_filetypes)
+                                        filetypes=list_filetypes, defaultextension=".*")
+            
         return self.f_path
     
     def ImportVideoEvent(self):
@@ -186,10 +191,11 @@ class ScreenshotWindow(ctk.CTkToplevel):
         self.save_button.place(rely=0.5, relx=0.5,anchor="center")
 
     def saveScreenshot(self):
-        filetypes = [("Jpeg Image .jpg","*.jpg")]
+        filetypes = [("Jpeg Image .jpg","*.jpg"),("PNG Image .png","*.png")]
         save_path = self.controller.FileExplorerEvent("save", filetypes)
-        self.img.save(f"{save_path}.jpg")
+        self.img.save(save_path)
 
+        
 def main():
     # start GUI
     root = ctk.CTk()
