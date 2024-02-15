@@ -80,6 +80,7 @@ class MainWindow:
             self.switch_video_var.set("off")
             self.cap = cv2.VideoCapture(0)
             self.ShowWebcam()
+            print("Im Here")
         else:
             self.cap.release()
 

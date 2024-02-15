@@ -8,17 +8,16 @@ from datetime import datetime
 
 # Code based on: https://github.com/nicknochnack/MultiPoseMovenetLightning
 
-
 class PoseEstimation:
     def __init__(self):
-        # model location
+        # model location from online url
         # self.model = hub.load("https://www.kaggle.com/models/google/movenet/frameworks/TensorFlow2/variations/multipose-lightning/versions/1")
-        self.modelPath = "Models"
+        
+        # local model path
+        self.modelPath = "Model"
         self.model = hub.load(self.modelPath)
         self.movenet = self.model.signatures['serving_default']
-
         
-
         # edges that connect
         self.edges = {
             (0, 1): 'm',
@@ -41,7 +40,7 @@ class PoseEstimation:
             (14, 16): 'c'
         }
 
-        self.confidence_threshold = 0.2
+        self.confidence_threshold = 0.3
         self.frame_dimension = [192, 256]
 
     def get_confidence_threshold(self):
