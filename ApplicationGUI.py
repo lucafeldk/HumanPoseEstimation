@@ -102,14 +102,15 @@ class MainWindow:
         else:
             del self.estimation
 
+    def RecordingEvent(self):
+        #Event to start recording 
+        pass
+
     def ShowWebcam(self):
         # method for showing webcam footage 
         if self.switch_cam_var.get() == "off":
             return
-     
-    def RecordingEvent(self):
-        pass
-
+        
         ret, frame = self.cap.read()
         if ret:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
