@@ -105,12 +105,14 @@ def start_estimation():
     estimation = PoseEstimation()
     if is_video is False:
         cap = cv2.VideoCapture(0)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 
     # define codec and create video writer object -> object for saving videos
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    save_videopath = f'Data//processedVideos//output_{datetime.now().strftime("%d_%w_%Y_%H_%M")}.avi'
-    out = cv2.VideoWriter(save_videopath, fourcc, 10.0, (int(cap.get(3)), int(cap.get(4))))
+    save_videopath = f'Data//processedVideos//output.avi'
+    out = cv2.VideoWriter(save_videopath, fourcc, 20.0, (640,480),True)
     print((int(cap.get(3)), int(cap.get(4))))
 
     while cap.isOpened():
@@ -134,7 +136,7 @@ def start_estimation():
 
         # write frame to file and show
         cv2.imshow('MoveNet Lightning', frame)
-        #out.write(frame)
+        out.write(frame)
 
         if cv2.waitKey(10) & 0xFF == ord('q'):
             release_Videooutput(out, save_videopath)
