@@ -66,12 +66,15 @@ class MainWindow:
         self.webcam_holder = None
 
         #### RECORDING PANEL ####
+        
         self.recording_frame = ctk.CTkFrame(self.parent, width=self.webcam_frame.cget("width"),
                                             height = self.webcam_frame.cget("height")/10)
         self.recording_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
+        self.recording_frame.rowconfigure(0, weight=1)
+        self.recording_frame.rowconfigure(1, weight=1)
         self.screenshot_button = ctk.CTkButton(self.recording_frame, text="Take Screenshot", command=self.ScreenshotEvent)
         self.screenshot_button.grid(row=0,column=0,padx=10, pady=5, sticky="nsew")
-        self.recording_button = ctk.CTkButton(self.recording_frame, text="Start Recording", command=self.RecordingEvent)
+        self.recording_button = ctk.CTkButton(self.recording_frame, text="Start Recording", command=self.RecordingEvent, fg_color="green", hover_color="green")
         self.recording_button.grid(row=1,column=0,padx=10,pady=5,sticky="nsew")
 
     def CamSwitchEvent(self):
@@ -80,7 +83,6 @@ class MainWindow:
             self.switch_video_var.set("off")
             self.cap = cv2.VideoCapture(0)
             self.ShowWebcam()
-            print("Im Here")
         else:
             self.cap.release()
 
@@ -103,7 +105,11 @@ class MainWindow:
             del self.estimation
 
     def RecordingEvent(self):
-        #Event to start recording 
+        #Event to start recording
+        if self.recording_button.cget("text") == "Start Recording" and self.switch_cam_var.get() == "on":
+            self.recording_button.configure(text="Stop Recording", fg_color = "red", hover_color = "red")
+        else:
+            self.recording_button.configure(text="Start Recording", fg_color = "green", hover_color = "green")
         pass
 
     def ShowWebcam(self):
