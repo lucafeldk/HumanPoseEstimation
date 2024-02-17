@@ -8,8 +8,14 @@ from tkinter.filedialog import askopenfilename, asksaveasfilename
 
 class MainWindow:
     def __init__(self, parent):
+        #----------------------------------------MAIN----------------------------------------------#
         ctk.set_appearance_mode("dark")
         self.cap = cv2.VideoCapture(0)
+        self.fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self.fps = 10
+        self.save_path = "Data\\processedVideos\\output.avi"
+        self.out = None
+        self.frame_size = (640 ,480)
         self.cap_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # float `width`
         self.cap_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.estimation = hpe.PoseEstimation()
@@ -24,7 +30,7 @@ class MainWindow:
         self.parent.grid_rowconfigure(0, weight=10)
         self.parent.grid_rowconfigure(1, weight=1)
 
-        #### CONTROL PANEL #####
+        #------------------------------------- CONTROL PANEL--------------------------------------#
         # create instance for control panel
         self.control_frame = ctk.CTkFrame(self.parent)
         self.control_frame.grid(row=0, column=0, rowspan=2, padx=10, pady=10, sticky="nsew")
@@ -59,13 +65,13 @@ class MainWindow:
         self.confidence_label = ctk.CTkLabel(self.control_frame, text="Estimation Sensitivity")
         self.confidence_label.grid(row=9, column=0,columnspan=2, sticky="nsew")
 
-        #### WEBCAM PANEL #####
+        #------------------------------------- WEBCAM PANEL -------------------------------------------------#
         # create instnace for webcam panel
         self.webcam_frame = ctk.CTkFrame(self.parent)
         self.webcam_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
         self.webcam_holder = None
 
-        #### RECORDING PANEL ####
+        #------------------------------------- RECORDING/PLAY PANEL-----------------------------------------------#
         
         self.recording_frame = ctk.CTkFrame(self.parent, width=self.webcam_frame.cget("width"),
                                             height = self.webcam_frame.cget("height")/10)
@@ -106,31 +112,43 @@ class MainWindow:
 
     def RecordingEvent(self):
         #Event to start recording
-        if self.recording_button.cget("text") == "Start Recording" and self.switch_cam_var.get() == "on":
+        if self.recording_button.cget("text") == "Start Recording" and self.switch_cam_var.get()=="on":
             self.recording_button.configure(text="Stop Recording", fg_color = "red", hover_color = "red")
+            #self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, self.frame)
         else:
             self.recording_button.configure(text="Start Recording", fg_color = "green", hover_color = "green")
+            if self.out: self.out.release()
         pass
+
+    def writeVideo(self,save_path, fourcc, fps, frame_size, frame):
+        if not self.out:
+            self.out = cv2.VideoWriter(save_path, fourcc, fps, frame_size)
+        self.out.write(frame)
+        
+        
 
     def ShowWebcam(self):
         # method for showing webcam footage 
         if self.switch_cam_var.get() == "off":
             return
         
-        ret, frame = self.cap.read()
+        ret, self.frame = self.cap.read()
         if ret:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
 
             # reshaping image
-            input_image = self.estimation.transform_frame(frame.copy(), 192, 256)
+            input_image = self.estimation.transform_frame(self.frame.copy(), 192, 256)
 
             # make keypoint detection
             results = self.estimation.movenet(input_image)
             keypoints_with_scores = results['output_0'].numpy()[:, :, :51].reshape((6, 17, 3))
 
             # Render keypoints
-            self.estimation.loop_through_people(frame, keypoints_with_scores, self.confidence_slider.get())
-            self.raw_img = Image.fromarray(frame)
+            self.estimation.loop_through_people(self.frame, keypoints_with_scores, self.confidence_slider.get())
+            self.raw_img = Image.fromarray(self.frame)
+
+            if self.recording_button.cget("text") == "Stop Recording":
+                self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, self.frame)
 
             if self.webcam_holder:
                 self.webcam_holder.configure(image=self.estimation_img)
