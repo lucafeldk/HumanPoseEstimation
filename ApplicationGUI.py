@@ -15,7 +15,7 @@ class MainWindow:
         self.fps = 10
         self.save_path = "Data\\processedVideos\\output.avi"
         self.out = None
-        self.frame_size = (640 ,480)
+        self.frame_size = (self.cap.get(3), self.cap.get(3))
         self.cap_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # float `width`
         self.cap_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.estimation = hpe.PoseEstimation()
@@ -65,7 +65,7 @@ class MainWindow:
         self.confidence_label = ctk.CTkLabel(self.control_frame, text="Estimation Sensitivity")
         self.confidence_label.grid(row=9, column=0,columnspan=2, sticky="nsew")
 
-        #------------------------------------- WEBCAM PANEL -------------------------------------------------#
+        #---------------------------------------- WEBCAM PANEL -------------------------------------------------#
         # create instnace for webcam panel
         self.webcam_frame = ctk.CTkFrame(self.parent)
         self.webcam_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
