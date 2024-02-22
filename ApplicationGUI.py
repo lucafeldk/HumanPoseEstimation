@@ -15,7 +15,7 @@ class MainWindow:
         self.fps = 10
         self.save_path = "Data\\processedVideos\\output.avi"
         self.out = None
-        self.frame_size = (self.cap.get(3), self.cap.get(3))
+        self.frame_size = (640,480)
         self.cap_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # float `width`
         self.cap_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         self.estimation = hpe.PoseEstimation()
@@ -117,7 +117,9 @@ class MainWindow:
             #self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, self.frame)
         else:
             self.recording_button.configure(text="Start Recording", fg_color = "green", hover_color = "green")
-            if self.out: self.out.release()
+            if self.out: 
+                self.out.release()
+                self.out = None
         pass
 
     def writeVideo(self,save_path, fourcc, fps, frame_size, frame):
@@ -148,6 +150,8 @@ class MainWindow:
             self.raw_img = Image.fromarray(self.frame)
 
             if self.recording_button.cget("text") == "Stop Recording":
+                #self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))
+                print("Here")
                 self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, self.frame)
 
             if self.webcam_holder:
