@@ -151,8 +151,8 @@ class MainWindow:
 
             if self.recording_button.cget("text") == "Stop Recording":
                 #self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))
-                print("Here")
-                self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, self.frame)
+                #print("Here")
+                self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, cv2.cvtColor(self.frame,cv2.COLOR_RGB2BGR))
 
             if self.webcam_holder:
                 self.webcam_holder.configure(image=self.estimation_img)
