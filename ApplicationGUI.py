@@ -1,5 +1,6 @@
 import customtkinter as ctk
 import cv2
+import imutils
 from PIL import Image
 from PIL import ImageTk
 import HPEstimation as hpe
@@ -15,9 +16,11 @@ class MainWindow:
         self.fps = 10
         self.save_path = "Data\\processedVideos\\output.avi"
         self.out = None
-        self.frame_size = (640,480)
         self.cap_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # float `width`
         self.cap_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        #self.cap_width = int(self.cap.set(cv2.CAP_PROP_FRAME_WIDTH),640)
+        #self.cap_height = int(self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT),480)
+        self.frame_size = (self.cap_width,self.cap_height)
         self.estimation = hpe.PoseEstimation()
         self.estimation_img = None
         self.parent = parent
@@ -137,7 +140,6 @@ class MainWindow:
         ret, self.frame = self.cap.read()
         if ret:
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-
             # reshaping image
             input_image = self.estimation.transform_frame(self.frame.copy(), 192, 256)
 
@@ -149,6 +151,8 @@ class MainWindow:
             self.estimation.loop_through_people(self.frame, keypoints_with_scores, self.confidence_slider.get())
             self.raw_img = Image.fromarray(self.frame)
 
+            self.frame = imutils.resize(self.frame,width=320)
+
             if self.recording_button.cget("text") == "Stop Recording":
                 #self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))
                 #print("Here")
@@ -157,11 +161,12 @@ class MainWindow:
             if self.webcam_holder:
                 self.webcam_holder.configure(image=self.estimation_img)
                 self.webcam_holder.image = self.estimation_img
-                self.estimation_img = ctk.CTkImage(dark_image=self.raw_img, size=(640, 480))
+                self.estimation_img = ctk.CTkImage(dark_image=self.raw_img, size=(self.frame.shape[1], self.frame.shape[0]))
 
             else:
                 self.webcam_holder = ctk.CTkLabel(self.webcam_frame, image=self.estimation_img, text="", padx=10, pady=10)
-                self.webcam_holder.place(relx=0.5, rely=0.5, anchor="center")
+                #self.webcam_holder.place(relx=0.5, rely=0.5, anchor="center")
+                self.webcam_holder.grid(row=0, column=0, sticky = "nswe")
 
         # Die ShowWebcam-Methode wird erneut nach 20 Millisekunden aufgerufen
         if self.switch_cam_var.get() == "on":
