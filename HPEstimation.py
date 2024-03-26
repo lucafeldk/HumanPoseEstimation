@@ -99,9 +99,11 @@ def release_Videooutput(out, video_file):
 
 def start_estimation():
     # Start Webcam
-    is_video = False
-    video_file = "Data//unprocessedVideos//Flower_for_Days_7A_Moonboard.mp4"
+    is_video = True
+    video_file = "Data//unprocessedVideos//PE31_6CV5_MoonBoard.mp4"
     cap = cv2.VideoCapture(video_file)
+    print(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    print(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     estimation = PoseEstimation()
     if is_video is False:
         cap = cv2.VideoCapture(0)
@@ -112,20 +114,19 @@ def start_estimation():
     # define codec and create video writer object -> object for saving videos
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
     save_videopath = f'Data//processedVideos//output.avi'
-    out = cv2.VideoWriter(save_videopath, fourcc, 20.0, (640,480),True)
-    print((int(cap.get(3)), int(cap.get(4))))
+    out = cv2.VideoWriter(save_videopath, fourcc, 20.0, (360, 640), True)
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             if is_video:
-                release_Videooutput(out,save_videopath)
+                release_Videooutput(out, save_videopath)
                 break
             print("Can't receive frame!")
             break
 
         # reshape img
-        input_image = estimation.transform_frame(frame.copy(), 192, 256)
+        input_image = estimation.transform_frame(frame.copy(),288, 160)
 
         # make keypoint detection
         results = estimation.movenet(input_image)
