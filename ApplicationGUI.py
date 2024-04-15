@@ -105,6 +105,7 @@ class MainWindow:
         # Event for switching from webcam footage to video footage
         if self.switch_video_var.get() == "on":
             self.switch_cam_var.set("off")
+            self.cap()
 
     def ActivateEstimationEvent(self):
         # activates and deactivates the Human Pose Estimation
@@ -151,7 +152,7 @@ class MainWindow:
             self.estimation.loop_through_people(self.frame, keypoints_with_scores, self.confidence_slider.get())
             self.raw_img = Image.fromarray(self.frame)
 
-            self.frame = imutils.resize(self.frame,width=320)
+            self.frame = imutils.resize(self.frame,width=640)
 
             if self.recording_button.cget("text") == "Stop Recording":
                 #self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))

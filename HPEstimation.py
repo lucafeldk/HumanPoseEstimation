@@ -126,7 +126,7 @@ def start_estimation():
             break
 
         # reshape img
-        input_image = estimation.transform_frame(frame.copy(),288, 160)
+        input_image = estimation.transform_frame(frame.copy(),288, 160) # frame size must be multiple of 32
 
         # make keypoint detection
         results = estimation.movenet(input_image)
