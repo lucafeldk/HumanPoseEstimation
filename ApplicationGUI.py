@@ -5,6 +5,7 @@ from PIL import Image
 from PIL import ImageTk
 import HPEstimation as hpe
 from tkinter.filedialog import askopenfilename, asksaveasfilename
+from itertools import combinations
 
 
 class MainWindow:
@@ -72,7 +73,11 @@ class MainWindow:
         # create instnace for webcam panel
         self.webcam_frame = ctk.CTkFrame(self.parent)
         self.webcam_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
-        self.webcam_holder = None
+        
+        #create instance for holding the images in the gui
+        self.image_holder = ctk.CTkLabel(self.webcam_frame, text="", padx=10, pady=10)
+        #self.webcam_holder.place(relx=0.5, rely=0.5, anchor="center")
+        self.image_holder.grid(row=0, column=0, sticky = "nswe")
 
         #------------------------------------- RECORDING/PLAY PANEL-----------------------------------------------#
         
@@ -95,17 +100,30 @@ class MainWindow:
         else:
             self.cap.release()
 
-            if self.webcam_holder:
-                self.webcam_holder.configure(image=None)
-                self.webcam_holder.image = None
-                self.webcam_holder = None
+            if self.image_holder:
+                self.image_holder.configure(image=None)
+                self.image_holder.image = None
         return
 
     def VideoSwitchEvent(self):
         # Event for switching from webcam footage to video footage
         if self.switch_video_var.get() == "on":
             self.switch_cam_var.set("off")
-            self.cap()
+        if self.import_text.get():
+            self.ChangeVideoCap(self.import_text.get())
+            return
+        self.image_holder.configure(image=None)
+        self.image_holder.image = None
+    
+    def RatioPair(self, num_list):
+        # Kombinationen von zwei Elementen aus der Liste erstellen
+        pairs = list(combinations(num_list, 2))
+        # Verhältnisse berechnen und in absteigender Reihenfolge sortieren
+        ratios = sorted([(max(pair) / min(pair)) for pair in pairs], reverse=True)
+        ratio_dict = dict(zip(ratios,pairs))
+    
+        return ratio_dict
+
 
     def ActivateEstimationEvent(self):
         # activates and deactivates the Human Pose Estimation
@@ -155,19 +173,14 @@ class MainWindow:
             self.frame = imutils.resize(self.frame,width=640)
 
             if self.recording_button.cget("text") == "Stop Recording":
-                #self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, cv2.cvtColor(self.frame, cv2.COLOR_RGB2BGR))
-                #print("Here")
                 self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, cv2.cvtColor(self.frame,cv2.COLOR_RGB2BGR))
 
-            if self.webcam_holder:
-                self.webcam_holder.configure(image=self.estimation_img)
-                self.webcam_holder.image = self.estimation_img
-                self.estimation_img = ctk.CTkImage(dark_image=self.raw_img, size=(self.frame.shape[1], self.frame.shape[0]))
-
-            else:
-                self.webcam_holder = ctk.CTkLabel(self.webcam_frame, image=self.estimation_img, text="", padx=10, pady=10)
-                #self.webcam_holder.place(relx=0.5, rely=0.5, anchor="center")
-                self.webcam_holder.grid(row=0, column=0, sticky = "nswe")
+            # place image into the holder
+            self.image_holder.configure(image=self.estimation_img)
+            self.image_holder.image = self.estimation_img
+            
+            #change image into ctkimage object 
+            self.estimation_img = ctk.CTkImage(dark_image=self.raw_img, size=(self.frame.shape[1], self.frame.shape[0]))
 
         # Die ShowWebcam-Methode wird erneut nach 20 Millisekunden aufgerufen
         if self.switch_cam_var.get() == "on":
@@ -191,9 +204,27 @@ class MainWindow:
             
         return self.f_path
     
+    def DisplayVideoEvent(self):
+        # change the videocapture from webcam to video
+        self.cap = cv2.VideoCapture(self.import_text)
+        self.frame_size = (self.cap.get(cv2.CAP_PROP_FRAME_WIDTH), self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+
     def ImportVideoEvent(self):
+        # definge filetypes, call file explorer and set text to video path
         filetypes = [("MP4 Videoformat .mp4", "*.mp4"),("AVI Videoformat .avi", "*.avi")]
         self.import_text.set(self.FileExplorerEvent("open", filetypes)) 
+
+        if self.switch_video_var.get() == "on":
+            self.ChangeVideoCap(self.import_text.get())
+
+    def ChangeVideoCap(self,file_path):  
+            self.cap = cv2.VideoCapture(file_path) 
+            frame = self.cap.read()[1]
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            raw_img = Image.fromarray(frame)
+            img= ctk.CTkImage(dark_image=raw_img, size=(frame.shape[1], frame.shape[0]))
+            self.image_holder.configure(image=img)
+            self.image_holder.image = img
         
     def __del__(self):
         self.cap.release()
