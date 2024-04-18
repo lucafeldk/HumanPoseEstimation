@@ -90,13 +90,15 @@ class MainWindow:
         self.screenshot_button.grid(row=0,column=0,padx=10, pady=5, sticky="nsew")
         self.recording_button = ctk.CTkButton(self.recording_frame, text="Start Recording", command=self.RecordingEvent, fg_color="green", hover_color="green")
         self.recording_button.grid(row=1,column=0,padx=10,pady=5,sticky="nsew")
+        self.play_button = ctk.CTkButton(self.recording_frame, text="Play Video", command=self.PlayVidEvent, fg_color="green", hover_color="green")
+        self.play_button.grid(row=0,column=1,padx=10,pady=5,sticky="nsew")
 
     def CamSwitchEvent(self):
         # Event for switching Webcam of Laptop off or on
         if self.switch_cam_var.get() == "on":
             self.switch_video_var.set("off")
             self.cap = cv2.VideoCapture(0)
-            self.ShowWebcam()
+            self.StartCapture()
         else:
             self.cap.release()
 
@@ -109,9 +111,11 @@ class MainWindow:
         # Event for switching from webcam footage to video footage
         if self.switch_video_var.get() == "on":
             self.switch_cam_var.set("off")
-        if self.import_text.get():
+
+        if self.import_text.get() != "Upload Video to App":
             self.ChangeVideoCap(self.import_text.get())
             return
+        
         self.image_holder.configure(image=None)
         self.image_holder.image = None
     
@@ -144,6 +148,15 @@ class MainWindow:
                 self.out = None
         pass
 
+    def PlayVidEvent(self):
+        # Event that start the video 
+        if self.play_button.cget("text") == "Play Video" and self.switch_video_var.get()=="on":
+            self.play_button.configure(text="Stop Video", fg_color = "red", hover_color = "red")
+            #self.
+        else:
+            self.play_button.configure(text="Play Video", fg_color = "green", hover_color = "green")
+        
+
     def writeVideo(self,save_path, fourcc, fps, frame_size, frame):
         if not self.out:
             self.out = cv2.VideoWriter(save_path, fourcc, fps, frame_size)
@@ -151,11 +164,12 @@ class MainWindow:
         
         
 
-    def ShowWebcam(self):
-        # method for showing webcam footage 
+    def StartCapture(self):
+        # method for starting the capturing of video or webcam
         if self.switch_cam_var.get() == "off":
             return
         
+        #self.RatioPair(self.)
         ret, self.frame = self.cap.read()
         if ret:
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
@@ -170,7 +184,7 @@ class MainWindow:
             self.estimation.loop_through_people(self.frame, keypoints_with_scores, self.confidence_slider.get())
             self.raw_img = Image.fromarray(self.frame)
 
-            self.frame = imutils.resize(self.frame,width=640)
+            #self.frame = imutils.resize(self.frame,width=640)
 
             if self.recording_button.cget("text") == "Stop Recording":
                 self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, cv2.cvtColor(self.frame,cv2.COLOR_RGB2BGR))
@@ -184,7 +198,7 @@ class MainWindow:
 
         # Die ShowWebcam-Methode wird erneut nach 20 Millisekunden aufgerufen
         if self.switch_cam_var.get() == "on":
-            self.webcam_frame.after(20, self.ShowWebcam)
+            self.webcam_frame.after(20, self.StartCapture)
         return
 
     def ScreenshotEvent(self):
