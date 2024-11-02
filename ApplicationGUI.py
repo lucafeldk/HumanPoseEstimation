@@ -22,6 +22,9 @@ class MainWindow:
         #self.cap_width = int(self.cap.set(cv2.CAP_PROP_FRAME_WIDTH),640)
         #self.cap_height = int(self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT),480)
         self.frame_size = (self.cap_width,self.cap_height)
+        self.transform_sizes = [32, 64, 128, 192, 224, 256, 288, 320, 352]
+        self.ratio_pairs = self.RatioPair(self.transform_sizes)
+        self.ratio_pairs.update({1/key: value[::-1] for key, value in self.ratio_pairs.items()})
         self.estimation = hpe.PoseEstimation()
         self.estimation_img = None
         self.parent = parent
@@ -123,7 +126,7 @@ class MainWindow:
         # Kombinationen von zwei Elementen aus der Liste erstellen
         pairs = list(combinations(num_list, 2))
         # Verhältnisse berechnen und in absteigender Reihenfolge sortieren
-        ratios = sorted([(max(pair) / min(pair)) for pair in pairs], reverse=True)
+        ratios = [pair[0] / pair[1] for pair in pairs]
         ratio_dict = dict(zip(ratios,pairs))
     
         return ratio_dict
@@ -152,7 +155,7 @@ class MainWindow:
         # Event that start the video 
         if self.play_button.cget("text") == "Play Video" and self.switch_video_var.get()=="on":
             self.play_button.configure(text="Stop Video", fg_color = "red", hover_color = "red")
-            #self.
+            self.StartCapture()
         else:
             self.play_button.configure(text="Play Video", fg_color = "green", hover_color = "green")
         
@@ -166,15 +169,18 @@ class MainWindow:
 
     def StartCapture(self):
         # method for starting the capturing of video or webcam
-        if self.switch_cam_var.get() == "off":
-            return
-        
-        #self.RatioPair(self.)
+        # if self.switch_cam_var.get() == "off":
+        #    return
+        ratio = self.cap_width/self.cap_height
+        print((self.cap_height,self.cap_width))
+        print(ratio)
+        self.transform_size = min(self.ratio_pairs.keys(), key = lambda x: abs(x-ratio)) #find nearest ratio dict entry
+        self.transform_size = self.ratio_pairs[self.transform_size] # select matching size
         ret, self.frame = self.cap.read()
         if ret:
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
             # reshaping image
-            input_image = self.estimation.transform_frame(self.frame.copy(), 192, 256)
+            input_image = self.estimation.transform_frame(self.frame.copy(), self.transform_size[1], self.transform_size[0])   # frame,height,width
 
             # make keypoint detection
             results = self.estimation.movenet(input_image)
@@ -187,7 +193,7 @@ class MainWindow:
             #self.frame = imutils.resize(self.frame,width=640)
 
             if self.recording_button.cget("text") == "Stop Recording":
-                self.writeVideo(self.save_path, self.fourcc, self.fps, self.frame_size, cv2.cvtColor(self.frame,cv2.COLOR_RGB2BGR))
+                self.writeVideo(self.save_path, self.fourcc, self.fps, (self.cap_width,self.cap_height), cv2.cvtColor(self.frame,cv2.COLOR_RGB2BGR))
 
             # place image into the holder
             self.image_holder.configure(image=self.estimation_img)
@@ -221,7 +227,8 @@ class MainWindow:
     def DisplayVideoEvent(self):
         # change the videocapture from webcam to video
         self.cap = cv2.VideoCapture(self.import_text)
-        self.frame_size = (self.cap.get(cv2.CAP_PROP_FRAME_WIDTH), self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        self.cap_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.cap_widht = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 
     def ImportVideoEvent(self):
         # definge filetypes, call file explorer and set text to video path
@@ -233,6 +240,9 @@ class MainWindow:
 
     def ChangeVideoCap(self,file_path):  
             self.cap = cv2.VideoCapture(file_path) 
+            self.cap_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            self.cap_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+            print((self.cap_height,self.cap_width))
             frame = self.cap.read()[1]
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             raw_img = Image.fromarray(frame)
