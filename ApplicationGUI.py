@@ -156,6 +156,7 @@ class MainWindow:
         if self.play_button.cget("text") == "Play Video" and self.switch_video_var.get()=="on":
             self.play_button.configure(text="Stop Video", fg_color = "red", hover_color = "red")
             self.StartCapture()
+            print("Starting Capture")
         else:
             self.play_button.configure(text="Play Video", fg_color = "green", hover_color = "green")
         
@@ -199,7 +200,7 @@ class MainWindow:
             self.estimation_img = ctk.CTkImage(dark_image=self.raw_img, size=(self.frame.shape[1], self.frame.shape[0]))
 
         # Die ShowWebcam-Methode wird erneut nach 20 Millisekunden aufgerufen
-        if self.switch_cam_var.get() == "on":
+        if self.switch_cam_var.get() == "on" or self.video_switch.get() == "on":
             self.webcam_frame.after(20, self.StartCapture)
         return
 
@@ -227,7 +228,7 @@ class MainWindow:
         self.cap_widht = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 
     def ImportVideoEvent(self):
-        # definge filetypes, call file explorer and set text to video path
+        # define filetypes, call file explorer and set text to video path
         filetypes = [("MP4 Videoformat .mp4", "*.mp4"),("AVI Videoformat .avi", "*.avi")]
         self.import_text.set(self.FileExplorerEvent("open", filetypes)) 
 
