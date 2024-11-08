@@ -152,7 +152,7 @@ class MainWindow:
         pass
 
     def PlayVidEvent(self):
-        # Event that start the video 
+        # Event that starts the video 
         if self.play_button.cget("text") == "Play Video" and self.switch_video_var.get()=="on":
             self.play_button.configure(text="Stop Video", fg_color = "red", hover_color = "red")
             self.StartCapture()
@@ -165,15 +165,11 @@ class MainWindow:
             self.out = cv2.VideoWriter(save_path, fourcc, fps, frame_size)
         self.out.write(frame)
         
-        
-
     def StartCapture(self):
         # method for starting the capturing of video or webcam
         # if self.switch_cam_var.get() == "off":
         #    return
         ratio = self.cap_width/self.cap_height
-        print((self.cap_height,self.cap_width))
-        print(ratio)
         self.transform_size = min(self.ratio_pairs.keys(), key = lambda x: abs(x-ratio)) #find nearest ratio dict entry
         self.transform_size = self.ratio_pairs[self.transform_size] # select matching size
         ret, self.frame = self.cap.read()
