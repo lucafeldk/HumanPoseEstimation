@@ -115,6 +115,7 @@ class MainWindow:
     def VideoSwitchEvent(self):
         # Event for switching from webcam footage to video footage
         if self.switch_video_var.get() == "on":
+            self.cap.release()
             self.switch_cam_var.set("off")
 
         if self.import_text.get() != "Upload Video to App":
