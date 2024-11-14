@@ -97,10 +97,12 @@ class MainWindow:
         self.play_button.grid(row=0,column=1,padx=10,pady=5,sticky="nsew")
 
     def CamSwitchEvent(self):
-        # Event for switching Webcam of Laptop off or on
+        # Event for switching Webcam off or on
         if self.switch_cam_var.get() == "on":
             self.switch_video_var.set("off")
             self.cap = cv2.VideoCapture(0)
+            self.cap_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))  # float `width`
+            self.cap_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             self.StartCapture()
         else:
             self.cap.release()
@@ -235,11 +237,11 @@ class MainWindow:
         if self.switch_video_var.get() == "on":
             self.ChangeVideoCap(self.import_text.get())
 
-    def ChangeVideoCap(self,file_path):  
+    def ChangeVideoCap(self,file_path): 
+            # method for changing the videocapture and the height and frame 
             self.cap = cv2.VideoCapture(file_path) 
             self.cap_height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
             self.cap_width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-            print((self.cap_height,self.cap_width))
             frame = self.cap.read()[1]
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             raw_img = Image.fromarray(frame)
