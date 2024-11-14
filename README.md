@@ -3,6 +3,6 @@ Using a Human Pose Estimation Model that is embedded inside a Desktop GUI. The a
 
 ## Credits
 This project uses:
-- [CustomTkinter] (https://github.com/TomSchimansky/CustomTkinter)
-- [Movenet Model] (https://www.kaggle.com/models/google/movenet/TensorFlow2/multipose-lightning/1%22)
-- [Pose Estimation Tutorial] (https://github.com/nicknochnack/MultiPoseMovenetLightning)
+- [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter)
+- [Movenet Model](https://www.kaggle.com/models/google/movenet/TensorFlow2/multipose-lightning/1%22)
+- [Pose Estimation Tutorial](https://github.com/nicknochnack/MultiPoseMovenetLightning)
