@@ -176,6 +176,7 @@ class MainWindow:
         ratio = self.cap_width/self.cap_height
         self.transform_size = min(self.ratio_pairs.keys(), key = lambda x: abs(x-ratio)) #find nearest ratio dict entry
         self.transform_size = self.ratio_pairs[self.transform_size] # select matching size
+        print(self.transform_size)
         ret, self.frame = self.cap.read()
         if ret:
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
