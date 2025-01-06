@@ -176,7 +176,6 @@ class MainWindow:
         ratio = self.cap_width/self.cap_height
         self.transform_size = min(self.ratio_pairs.keys(), key = lambda x: abs(x-ratio)) #find nearest ratio dict entry
         self.transform_size = self.ratio_pairs[self.transform_size] # select matching size
-        print(self.transform_size)
         ret, self.frame = self.cap.read()
         if ret:
             self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
@@ -190,8 +189,9 @@ class MainWindow:
             # Render keypoints
             self.estimation.loop_through_people(self.frame, keypoints_with_scores, self.confidence_slider.get())
             self.raw_img = Image.fromarray(self.frame)
+            self.raw_img = imutils.resize(self.raw_img, width=640)
 
-            #self.frame = imutils.resize(self.frame,width=640)
+            self.frame = imutils.resize(self.frame, width=640)
 
             if self.recording_button.cget("text") == "Stop Recording":
                 self.writeVideo(self.save_path, self.fourcc, self.fps, (self.cap_width,self.cap_height), cv2.cvtColor(self.frame,cv2.COLOR_RGB2BGR))
@@ -199,7 +199,7 @@ class MainWindow:
             # place image into the holder
             self.image_holder.configure(image=self.estimation_img)
             self.image_holder.image = self.estimation_img
-            
+            print(self.frame.shape[1] + "," + self.frame.shape[0])
             #change image into ctkimage object 
             self.estimation_img = ctk.CTkImage(dark_image=self.raw_img, size=(self.frame.shape[1], self.frame.shape[0]))
 
